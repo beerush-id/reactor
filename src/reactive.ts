@@ -1,16 +1,18 @@
-import { ReactAble, Reactive, Store, Subscriber, typeOf, Unsubscribe } from './types';
+import { GenericType, ReactAble, Reactive, Reactivities, Store, Subscriber, Unsubscribe } from './types';
 
 export function reactive<T extends ReactAble, R extends boolean = false>(
   source: T,
   recursive?: boolean,
   protect: string[] = [ 'set', 'subscribe' ]
-): Reactive<T, R> {
+): R extends true ? Reactivities<T> : Reactive<T> {
   const reflected: T & Store<T> = source as never;
   const subscribers: Subscriber<T>[] = [];
   let self: Reactive<T>;
 
-  const subscribe = (handler: Subscriber<T>): Unsubscribe => {
-    handler(self);
+  const subscribe = (handler: Subscriber<T>, init = true): Unsubscribe => {
+    if (init) {
+      handler(self);
+    }
 
     subscribers.push(handler);
 
@@ -129,8 +131,8 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
       reactAllItems(reflected as never, recursive);
     }
 
-    self = reflected as Reactive<T, R>;
-    return reflected as Reactive<T, R>;
+    self = reflected as Reactive<T> as never;
+    return reflected as Reactive<T> as never;
   } else {
     const proxy = new Proxy(reflected, handler);
 
@@ -138,8 +140,8 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
       reactAllProps(reflected as never, recursive);
     }
 
-    self = proxy as Reactive<T, R>;
-    return proxy as Reactive<T, R>;
+    self = proxy as Reactive<T> as never;
+    return proxy as Reactive<T> as never;
   }
 }
 
@@ -168,16 +170,16 @@ function reactAllItems<T extends ReactAble>(proxy: Reactive<T>, recursive?: bool
   if (Array.isArray(proxy)) {
     proxy.forEach((item, i) => {
       if ([ 'array', 'object' ].includes(typeOf(item))) {
-        if (item.subscribe) {
+        if ('subscribe' in item) {
           (item as Reactive<T>).subscribe((o, p, n, a, h, t) => {
             proxy.set(n as never, p, a, h, t);
           });
         }
 
-        if (!item.subscribe) {
+        if (!('subscribe' in item)) {
           const reacted = reactive(item, recursive);
           reacted.subscribe((o, p, n, a, h, t) => {
-            proxy.set(n as never, p as keyof T, a, h, t);
+            proxy.set(n as never, p, a, h, t);
           });
 
           proxy[i] = reacted;
@@ -185,4 +187,8 @@ function reactAllItems<T extends ReactAble>(proxy: Reactive<T>, recursive?: bool
       }
     });
   }
+}
+
+function typeOf(obj: unknown): GenericType {
+  return toString.call(obj).replace(/\[object /, '').replace(/]/, '').toLowerCase() as GenericType;
 }

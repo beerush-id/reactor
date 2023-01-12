@@ -1,5 +1,5 @@
 import { reactive } from './reactive';
-import type { ReactAble, Reactive } from './types';
+import type { ReactAble, Reactive, Reactivities } from './types';
 
 const STORE_NAME = 'reactor-persistent-data';
 
@@ -27,7 +27,12 @@ export let PersistentStore: {
     PersistentStore.write();
   },
   write: () => {
-    localStorage.setItem(STORE_NAME, JSON.stringify(PersistentStore));
+    try {
+      localStorage.setItem(STORE_NAME, JSON.stringify(PersistentStore));
+    } catch (error) {
+      console.warn('localStorage is not accessible, write ignored!');
+      console.error(error);
+    }
   },
 };
 
@@ -41,17 +46,22 @@ if (typeof window === 'object') {
   if (window['PersistentStore' as never]) {
     PersistentStore = window['PersistentStore' as never] as never;
   } else {
-    const data = localStorage.getItem(STORE_NAME);
+    try {
+      const data = localStorage.getItem(STORE_NAME);
 
-    if (data) {
-      Object.assign(PersistentStore, JSON.parse(data));
+      if (data) {
+        Object.assign(PersistentStore, JSON.parse(data));
 
-      for (const [ , value ] of Object.entries(PersistentStore.store)) {
-        value.data = reactive(value.data, value.recursive);
-        value.data.subscribe(() => PersistentStore.write());
+        for (const [ , value ] of Object.entries(PersistentStore.store)) {
+          value.data = reactive(value.data, value.recursive);
+          value.data.subscribe(() => PersistentStore.write());
+        }
+      } else {
+        PersistentStore.write();
       }
-    } else {
-      PersistentStore.write();
+    } catch (error) {
+      console.warn('localStorage is not accessible, read ignored!');
+      console.error(error);
     }
 
     window['PersistentStore' as never] = PersistentStore as never;
@@ -76,16 +86,16 @@ export function resistant<T extends ReactAble, R extends boolean = true>(
   name: string,
   object: T,
   recursive = true
-): Reactive<T, R> {
+): R extends true ? Reactivities<T> : Reactive<T> {
   if (typeof window === 'undefined') {
-    return reactive<T, R>(object, recursive) as Reactive<T, R>;
+    return reactive<T, R>(object, recursive) as Reactive<T> as never;
   }
 
   if (!ReactiveStore[name]) {
     ReactiveStore[name] = reactive<T>(object, recursive) as never;
   }
 
-  return ReactiveStore[name] as Reactive<T, R>;
+  return ReactiveStore[name] as Reactive<T> as never;
 }
 
 export function forget(name: string) {
@@ -98,9 +108,9 @@ export function persistent<T extends ReactAble, R extends boolean = true>(
   name: string,
   object: T,
   recursive = true
-): Reactive<T, R> {
+): R extends true ? Reactivities<T> : Reactive<T> {
   if (typeof window === 'undefined') {
-    return reactive<T>(object, recursive) as Reactive<T, R>;
+    return reactive<T>(object, recursive) as Reactive<T> as never;
   }
 
   if (!PersistentStore.store[name]) {
@@ -110,7 +120,7 @@ export function persistent<T extends ReactAble, R extends boolean = true>(
     PersistentStore.write();
   }
 
-  return PersistentStore.store[name].data as Reactive<T, R>;
+  return PersistentStore.store[name].data as Reactive<T> as never;
 }
 
 export function purge(name: string): void {
