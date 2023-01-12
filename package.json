@@ -1,0 +1,52 @@
+{
+  "name": "@beerush/reactor",
+  "version": "0.4.2",
+  "description": "Javascript Reactive Proxy to transform any object/array into reactive object/array, recursively!",
+  "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
+  "homepage": "https://github.com/beerush-id/reactor#readme",
+  "license": "MIT",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "typings": "lib/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/esm/index.d.ts",
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.cjs"
+    }
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "files": [
+    "lib/"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beerush-id/reactor.git"
+  },
+  "scripts": {
+    "dev": "npm run clean && tsc -p tsconfig.json --watch",
+    "build": "npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
+    "clean": "rimraf ./lib",
+    "prepublish": "npm run build"
+  },
+  "bugs": {
+    "url": "https://github.com/beerush-id/reactor/issues"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2",
+    "typescript": "^4.9.4"
+  },
+  "keywords": [
+    "reactive",
+    "reactive",
+    "svelte",
+    "reactive",
+    "object"
+  ]
+}
