@@ -1,13 +1,20 @@
 # `@beerush/reactor`
 
-Reactor is a Javascript Proxy helper to transform any object into a reactive object, recursively!
+Reactor is a Javascript Proxy helper to transform any object/array into a reactive object/array, recursively!
 
-In Svelte, we have a Store that held our states. While it's awesome,
-it still needs some effort because when we update the object such setting or deleting a property, we need
-to manually tells the store to publish the changes so Svelte
-can re-render it.
+For example, in Svelte, instead doing `todo.done = true; todos = todos;` we can simply
+do `todo.done = true` and the component will be updated, no need to call the `.set()`
+method or reassigning the variable.
 
-**Example**
+
+Wit reactor we can subscribe to the data changes, and will get notified
+when the data changes. Changing the data simply assigning value.
+
+Reactive object is a Proxy object with additional property `.subcribe()`, and optional `.set()` function.
+
+Let's take a look at the sample below:
+
+**Without Reactor**
 
 ```svelte
 
@@ -84,16 +91,24 @@ Svelte will re-render the View without manually tells Svelte to do it.
 
 ## Usage
 
-```
+```ts
 import { reactive } from '@beerush/reactor';
 
-const data = reactive(OBJECT);
+type Todo = {
+  name: string;
+}
+
+// Non recursive.
+const data = reactive<Todo>({ name: 'Todo' });
+
+// Recursive
+const todos = reactive<Todo[], true>([], true);
 
 ```
 
 ### Reactive
 
-**`reactive(object: object|array, recursive?:boolean): Reactive;`**
+**`reactive(object: object | object[], recursive: boolean = false): Reactive;`**
 
 Reactive function will transform an object into a reactive object. If we
 set the `recursive` to `true`, all object/array inside it will be reactive as well,
@@ -149,6 +164,8 @@ unsub();
 Sometimes we need a reactive object that shares data anywhere.
 With named reactive (`resistant()`), we can create a reactive object that only created once.
 
+> Named Store is recursive by default.
+
 **Example**
 
 ```svelte
@@ -181,6 +198,8 @@ reset the data.
 If we need a reactive object that persistent when the browser is reloaded,
 we can use the `persistent()` function to create a persistent store. Like
 the named store, it only created once and will share the same data whenever we access it.
+
+> Persistent Store is recursive by default.
 
 > Please note, Persistent Store will save the data to `localStorage` whenever it's changed. We recommend
 > to use it to store data that not changed very often to
