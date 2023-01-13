@@ -1,6 +1,19 @@
 export type GenericType = 'string' | 'number' | 'object' | 'array' | 'date' | 'function' | 'boolean';
 export type ItemTypeOf<T> = T extends readonly (infer U)[] ? U : never;
 
+export type ObjectAction = 'set' | 'delete';
+export type ArrayAction =
+  'copyWithin'
+  | 'fill'
+  | 'pop'
+  | 'push'
+  | 'shift'
+  | 'unshift'
+  | 'splice'
+  | 'sort'
+  | 'reverse';
+export type Action = ObjectAction | ArrayAction;
+
 export type Store<T> = { subscribe: Subscribe<T>; set: Setter<T>; }
 export type Filtered<T> = Pick<T, {
   [K in keyof T]: T[K] extends Restricted ? never : T[K] extends Restricted[] ? never : K;
@@ -22,15 +35,19 @@ export type Merge<T, S> = {
   [K in keyof T]: T[K];
 } & S;
 
-export type Subscribe<T> = (fn: Subscriber<T>, init?: boolean) => Unsubscribe;
-export type Subscriber<T> = (
+export type SubscribeFn<T> = (fn: Subscriber<T>, init?: boolean, actions?: Action[]) => Unsubscribe;
+export type Subscribe<T> = SubscribeFn<T> & {
+  for: (actions: Action[], init?: boolean) => Unsubscribe;
+};
+export type SubscriberFn<T> = (
   self?: T,
   prop?: keyof T,
   value?: T[keyof T],
-  action?: string,
+  action?: Action,
   path?: string,
   target?: unknown
 ) => void;
+export type Subscriber<T> = SubscriberFn<T> & { actions?: Action[] };
 export type Unsubscribe = UnsubscribeFn & {
   unsubscribe?: () => void;
 };

@@ -1,4 +1,28 @@
-import { GenericType, ReactAble, Reactive, Reactivities, Store, Subscriber, Unsubscribe } from './types';
+import {
+  Action,
+  ArrayAction,
+  GenericType,
+  ObjectAction,
+  ReactAble,
+  Reactive,
+  Reactivities,
+  Store,
+  Subscriber,
+  Unsubscribe
+} from './types';
+
+export const OBJECT_MUTATIONS: ObjectAction[] = [ 'set', 'delete' ];
+export const ARRAY_MUTATIONS: ArrayAction[] = [
+  'copyWithin',
+  'fill',
+  'pop',
+  'push',
+  'shift',
+  'unshift',
+  'splice',
+  'sort',
+  'reverse'
+];
 
 export function reactive<T extends ReactAble, R extends boolean = false>(
   source: T,
@@ -9,9 +33,13 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
   const subscribers: Subscriber<T>[] = [];
   let self: Reactive<T>;
 
-  const subscribe = (handler: Subscriber<T>, init = true): Unsubscribe => {
+  const subscribe = (handler: Subscriber<T>, init = true, actions?: Action[]): Unsubscribe => {
     if (init) {
       handler(self);
+    }
+
+    if (actions) {
+      handler.actions = actions;
     }
 
     subscribers.push(handler);
@@ -24,7 +52,11 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     return unsub;
   };
 
-  const set = (value?: unknown, prop?: keyof T, action?: string, path?: string, target?: unknown) => {
+  subscribe.for = (actions: Action[], handler: Subscriber<T>) => {
+    return subscribe(handler, false, actions);
+  };
+
+  const set = (value?: unknown, prop?: keyof T, action?: Action, path?: string, target?: unknown) => {
     if (value === self || (!value && !action)) {
       return;
     }
@@ -57,7 +89,13 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
 
     for (const notify of subscribers) {
       if (typeof notify === 'function') {
-        notify(self, prop, value as never, action, path, target);
+        if (action) {
+          if (!notify.actions || (notify.actions && notify.actions.includes(action))) {
+            notify(self, prop, value as never, action, path, target);
+          }
+        } else {
+          notify(self, prop, value as never, action, path, target);
+        }
       }
     }
   };
@@ -114,7 +152,7 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
   Object.defineProperty(reflected, 'subscribe', { enumerable: false });
 
   if (Array.isArray(reflected)) {
-    for (const method of [ 'concat', 'copyWithin', 'fill', 'pop', 'push', 'shift', 'splice' ]) {
+    for (const method of ARRAY_MUTATIONS) {
       const fn = reflected[method as never];
 
       (reflected)[method as never] = (...args: unknown[]) => {

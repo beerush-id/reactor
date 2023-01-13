@@ -6,8 +6,7 @@ For example, in Svelte, instead doing `todo.done = true; todos = todos;` we can 
 do `todo.done = true` and the component will be updated, no need to call the `.set()`
 method or reassigning the variable.
 
-
-Wit reactor we can subscribe to the data changes, and will get notified
+With reactor, we can subscribe to the data changes, and will get notified
 when the data changes. Changing the data simply assigning value.
 
 Reactive object is a Proxy object with additional property `.subcribe()`, and optional `.set()` function.
@@ -119,16 +118,14 @@ to subscribe for data changes.
 
 ### Subscription
 
-**`.subscribe((self, prop, value, action, path) => void): () => void`**
+**`.subscribe(handler: Function, init = true, actions?: Action[]): () => Unsubscribe`**
 
-- **`self`** - The object itself.
-- **`prop`** - The changed property, empty string on array methods (`push`, `splice`, etc).
-- **`value`** - New value added to the property.
-- **`action`** - The data change type. (`set`|`delete` or array methods `push`|`splice` etc).
-- **`path`** - The full path of the changed object (e.g, `children.0.name`).
+- **`handler`** - Function to handle the change notification.
+- **`init`** - Indicate to call the handler at the first subscribe call.
+- **`actions`** - Array of mutation type to listen to specific mutations.
 
-The subscription function will return a function to unsubscribe from it.
-When the unsubscribe function called, you will not get notified for a data changes anymore.
+The subscription function will return a function to unsubscribe from it. When the unsubscribe function called, you will
+not get notified for a data changes anymore.
 
 **Example**
 
@@ -156,6 +153,43 @@ obj.c.c.push([ 4 ]);
 
 // Stop getting notified for data chagnes.
 unsub();
+
+// Subscribe for set object property and delete property only.
+obj.subscribe(() => {
+  // ...
+}, false, [ 'set', 'delete' ]);
+
+// Subscribe for array mutations only.
+import { ARRAY_MUTATIONS } from '@beerush/reactor';
+
+obj.subscribe(() => {
+  // ...
+}, false, ARRAY_MUTATIONS);
+
+// Subscribe for .push() method only.
+obj.subscribe(() => {
+  // ...
+}, false, [ 'push' ]);
+
+```
+
+#### Subscription Handler
+
+**`(self: object | object[], prop: string, value: unknown, action: Action, path: string) => void`**
+
+A function to handle the data changes notification.
+
+- **`self`** - The object itself.
+- **`prop`** - The changed property, empty string on array methods (`push`, `splice`, etc).
+- **`value`** - New value added to the property.
+- **`action`** - The data change type. (`set`|`delete` or array mutable methods `push`|`splice` etc).
+- **`path`** - The full path of the changed object (e.g, `children.0.name`).
+
+**Example**
+```js
+obj.subscribe((o, prop, value, action) => {
+  console.log(`Object changes: ${action} ${prop} with ${value}`);
+});
 
 ```
 
