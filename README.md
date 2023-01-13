@@ -154,19 +154,24 @@ obj.c.c.push([ 4 ]);
 // Stop getting notified for data chagnes.
 unsub();
 
-// Subscribe for set object property and delete property only.
+// Subscribe for "set" and "delete" property only.
 obj.subscribe(() => {
   // ...
 }, false, [ 'set', 'delete' ]);
 
-// Subscribe for array mutations only.
+// Subscribe for "set" property using alias.
+obj.subscribe.for(['set'], (o, prop, value) => {
+  console.log(`Property ${prop} changed to ${value}`);
+});
+
+// Subscribe for "array mutations" only.
 import { ARRAY_MUTATIONS } from '@beerush/reactor';
 
 obj.subscribe(() => {
   // ...
 }, false, ARRAY_MUTATIONS);
 
-// Subscribe for .push() method only.
+// Subscribe for ".push()" method only.
 obj.subscribe(() => {
   // ...
 }, false, [ 'push' ]);
