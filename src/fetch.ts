@@ -80,12 +80,17 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
                   Object.assign(state, {
                     __status: res.status,
                     __statusText: res.statusText,
+                    __response: res,
                     __finishedAt: new Date(),
-                    __response: res
                   });
                 })
                 .catch(error => {
-                  Object.assign(state, { __status: 500, __statusText: error.message, __error: error });
+                  Object.assign(state, {
+                    __status: 500,
+                    __statusText: error.message,
+                    __error: error,
+                    __finishedAt: new Date(),
+                  });
                 });
             } else {
               Object.assign(state, {
@@ -93,11 +98,17 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
                 __statusText: res.statusText,
                 __response: res,
                 __error: new Error(res.statusText),
+                __finishedAt: new Date(),
               });
             }
           })
           .catch(error => {
-            Object.assign(state, { __status: 500, __statusText: error.message, __error: error });
+            Object.assign(state, {
+              __status: 500,
+              __statusText: error.message,
+              __error: error,
+              __finishedAt: new Date(),
+            });
           })
           .finally(() => {
             delete activeRequests[key];

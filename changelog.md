@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.2
+
+- Fix missing `__finishedAt` when request failed.
+
 ## v0.6.0
 
 - Added new `fetch()` helper.
