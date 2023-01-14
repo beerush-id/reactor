@@ -333,7 +333,7 @@ Reactive object returned from `fetch()` contains additional properties:
 
 **Example**
 
-```sveltehtml
+```svelte
 
 <script lang="ts">
   import { fetch } from '@beerush/reactor';
