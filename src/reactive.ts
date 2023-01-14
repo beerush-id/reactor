@@ -102,11 +102,16 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
 
   const handler: ProxyHandler<T> = {
     set: (target: T, prop: string, newValue: ReactAble | Reactive<ReactAble>, receiver: unknown): boolean => {
-      if (protect.includes(prop)) {
+      if ([ 'set', 'subscribe' ].includes(prop)) {
         return true;
       }
 
       if (target[prop as never] === newValue) {
+        return true;
+      }
+
+      if (protect.includes(prop)) {
+        Reflect.set(target, prop, newValue, receiver);
         return true;
       }
 
@@ -133,11 +138,16 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
       return true;
     },
     deleteProperty: (target: T, prop: string): boolean => {
-      if (protect.includes(prop)) {
+      if ([ 'set', 'subscribe' ].includes(prop)) {
         return true;
       }
 
       if (typeof target[prop as never] === 'undefined') {
+        return true;
+      }
+
+      if (protect.includes(prop)) {
+        Reflect.deleteProperty(target, prop);
         return true;
       }
 
@@ -165,12 +175,14 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
       Object.defineProperty(reflected, method, { enumerable: false });
     }
 
+    const proxy = new Proxy(reflected, handler);
+
     if (recursive) {
       reactAllItems(reflected as never, recursive);
     }
 
-    self = reflected as Reactive<T> as never;
-    return reflected as Reactive<T> as never;
+    self = proxy as Reactive<T> as never;
+    return proxy as Reactive<T> as never;
   } else {
     const proxy = new Proxy(reflected, handler);
 

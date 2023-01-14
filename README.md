@@ -160,7 +160,7 @@ obj.subscribe(() => {
 }, false, [ 'set', 'delete' ]);
 
 // Subscribe for "set" property using alias.
-obj.subscribe.for(['set'], (o, prop, value) => {
+obj.subscribe.for([ 'set' ], (o, prop, value) => {
   console.log(`Property ${prop} changed to ${value}`);
 });
 
@@ -191,6 +191,7 @@ A function to handle the data changes notification.
 - **`path`** - The full path of the changed object (e.g, `children.0.name`).
 
 **Example**
+
 ```js
 obj.subscribe((o, prop, value, action) => {
   console.log(`Object changes: ${action} ${prop} with ${value}`);
@@ -308,3 +309,61 @@ on both memory and localStorage.
 
 ```
 
+## Reactive Fetch
+
+**`featch(url: string, init: object|object[], options?: Request): ReactiveResponse;`**
+
+Reactive Fetch will help us to do native `fetch()` but return a reactive object/array.
+
+Reactive object returned from `fetch()` contains additional properties:
+
+- `__status` - The request status code.
+- `__statusText` - The request status text.
+- `__error` - Error object if the request failed.
+- `__request` - The request options.
+- `__response` - The response object after request finished.
+- `__finishedAt` - Date to mark when the request is finished.
+- `__refresh()` - A function to manually refresh the data by re-requesting it.
+
+> Make sure to use reactive fetch only for JSON response. This function will always convert the response to JSON.
+>
+> Fetching array will replace the existing data with the new response, while fetching object will merge it.
+>
+> Calling the `__refresh()` function will reset the `__status`, `__statusText`, and `__error` properties.
+
+**Example**
+
+```sveltehtml
+
+<script lang="ts">
+  import { fetch } from '@beerush/reactor';
+
+  type User = {
+    name: string;
+  }
+
+  const users = fetch<User[]>('/users', []);
+</script>
+{#if users.__finishedAt}
+  {#if users.__status < 300}
+    <p>Success!</p>
+  {:else}
+    <p>Error: {users.__error.message}</p>
+  {/if}
+{:else}
+  <p>Loading...</p>
+{/if}
+
+```
+
+By default, the request will be cached. So if you ever request `fetch('/users', [])`,
+when you call the same request it'll simply return the cache and not doing new request.
+
+If you need to always re-request when calling the function, you can add `{ cache: 'reload' }` to the request options, or
+add `{ cachePeriod: number }` to the request options, so when the cache is expired it'll re-request.
+
+Why cache it by default? The purpose of this function is to improve user interaction time in the client side. When the
+data is available in the cache, users can see it without waiting the request complete.
+
+> `{ cache: 'reload' }` option can be useful to keep displaying the cached data while refreshing the data in the
+> background.

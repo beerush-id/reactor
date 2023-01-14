@@ -80,19 +80,21 @@ export function upgrade(version: string) {
  * @param {string} name - name in the store.
  * @param {T extends object} object - Object/Array to register and make it reactive.
  * @param recursive - Transform object inside an array as well.
+ * @param protect
  * @returns {Reactive<T extends object>}
  */
 export function resistant<T extends ReactAble, R extends boolean = true>(
   name: string,
   object: T,
-  recursive = true
+  recursive = true,
+  protect?: string[]
 ): R extends true ? Reactivities<T> : Reactive<T> {
   if (typeof window === 'undefined') {
     return reactive<T, R>(object, recursive) as Reactive<T> as never;
   }
 
   if (!ReactiveStore[name]) {
-    ReactiveStore[name] = reactive<T>(object, recursive) as never;
+    ReactiveStore[name] = reactive<T>(object, recursive, protect) as never;
   }
 
   return ReactiveStore[name] as Reactive<T> as never;
@@ -104,17 +106,26 @@ export function forget(name: string) {
   }
 }
 
+/**
+ * Register an object/array to the Persistent Store.
+ * @param {string} name
+ * @param {T} object
+ * @param {boolean} recursive
+ * @param {string[]} protect
+ * @returns {R extends true ? Reactivities<T> : Reactive<T>}
+ */
 export function persistent<T extends ReactAble, R extends boolean = true>(
   name: string,
   object: T,
-  recursive = true
+  recursive = true,
+  protect?: string[]
 ): R extends true ? Reactivities<T> : Reactive<T> {
   if (typeof window === 'undefined') {
     return reactive<T>(object, recursive) as Reactive<T> as never;
   }
 
   if (!PersistentStore.store[name]) {
-    const data: Reactive<unknown> = reactive<T>(object, recursive) as Reactive<unknown>;
+    const data: Reactive<unknown> = reactive<T>(object, recursive, protect) as Reactive<unknown>;
     data.subscribe(() => PersistentStore.write());
     PersistentStore.store[name] = { data, recursive };
     PersistentStore.write();
