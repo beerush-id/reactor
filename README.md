@@ -1,12 +1,20 @@
 # `@beerush/reactor`
 
-> For a summary of the most recent changes, please see [changelog.md](https://github.com/beerush-id/reactor/tree/main/changelog.md).
-
 Reactor is a Javascript Proxy helper to transform any object/array into a reactive object/array, recursively!
 
 For example, in Svelte, instead doing `todo.done = true; todos = todos;` we can simply
 do `todo.done = true` and the component will be updated, no need to call the `.set()`
 method or reassigning the variable.
+
+### Getting Started
+- [Usage](#usage)
+- [Reactive](#reactive)
+- [Subscription](#subscription)
+- [Named Store](#named-store)
+- [Persistent Store](#persistent-store)
+- [Reactive Fetch](#reactive-fetch)
+
+> For a summary of the most recent changes, please see [changelog.md](https://github.com/beerush-id/reactor/tree/main/changelog.md).
 
 With reactor, we can subscribe to the data changes, and will get notified
 when the data changes. Changing the data simply assigning value.
@@ -91,6 +99,9 @@ With Reactor, we can simply do what we need (set property, push item, etc.), and
 Svelte will re-render the View without manually tells Svelte to do it.
 
 ## Usage
+```shell
+yarn add @beerush/reactor
+```
 
 ```ts
 import { reactive } from '@beerush/reactor';
@@ -107,7 +118,7 @@ const todos = reactive<Todo[], true>([], true);
 
 ```
 
-### Reactive
+## Reactive
 
 **`reactive(object: object | object[], recursive: boolean = false): Reactive;`**
 
@@ -180,7 +191,7 @@ obj.subscribe(() => {
 
 ```
 
-#### Subscription Handler
+### Subscription Handler
 
 **`(self: object | object[], prop: string, value: unknown, action: Action, path: string) => void`**
 
@@ -201,7 +212,7 @@ obj.subscribe((o, prop, value, action) => {
 
 ```
 
-### Named Store
+## Named Store
 
 Sometimes we need a reactive object that shares data anywhere.
 With named reactive (`resistant()`), we can create a reactive object that only created once.
@@ -235,7 +246,7 @@ From the sample above, the settings object will be created once, so it
 shares the same data whenever we access it. Though, reloading the browser will
 reset the data.
 
-### Persistent Store
+## Persistent Store
 
 If we need a reactive object that persistent when the browser is reloaded,
 we can use the `persistent()` function to create a persistent store. Like
@@ -270,7 +281,7 @@ the named store, it only created once and will share the same data whenever we a
 
 ```
 
-#### Upgrading Persistent Store
+### Upgrading Persistent Store
 
 Upgrading the Persistent Store only necessary if you change the data structure that can breaks the app.
 
@@ -294,7 +305,7 @@ Upgrading the Persistent Store only necessary if you change the data structure t
 
 ```
 
-#### Removing Data From Persistent Store
+### Removing Data From Persistent Store
 
 If for some reason we need to remove some data from the Persistent Store,
 we can use `purge(NAME)` function to do it. Once removed, the data will not exist
