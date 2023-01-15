@@ -13,6 +13,7 @@ export type ReactiveResponse<T, R> = (R extends true ? Reactivities<T> : Reactiv
 
 export type ReactiveRequest = Request & {
   cachePeriod?: number;
+  recursive?: boolean;
 }
 
 declare var global: any;
@@ -38,8 +39,8 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
     throw new Error('Native fetch API is not available, but required!');
   }
 
-  const key = JSON.stringify({ url, options: { ...options, cache: null, cachePeriod: null } });
-  const state = resistant<T, R>(key, object, true, [
+  const key = JSON.stringify({ url, options: { ...options, cache: null, cachePeriod: null, recursive: null } });
+  const state = resistant<T, R>(key, object, options.recursive, [
     '__refresh', '__request', '__response'
   ]);
 
