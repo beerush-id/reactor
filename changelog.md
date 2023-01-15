@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.3
+
+- Exclude `cache` and `cachePeriod` from the cache key to allow having two identical request, one just for subscription
+  and one to re-fetch the data. For example, the breadcrumb component call the `fetch()` without cache option, and the
+  overview component call the `fetch()` with `cache` option to re-fetch the data. By doing this, only one network
+  request sent because those requests are identical.
+
 ## v0.6.2
 
 - Fix missing `__finishedAt` when request failed.

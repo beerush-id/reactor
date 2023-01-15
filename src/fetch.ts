@@ -38,7 +38,7 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
     throw new Error('Native fetch API is not available, but required!');
   }
 
-  const key = JSON.stringify({ url, options });
+  const key = JSON.stringify({ url, options: { ...options, cache: null, cachePeriod: null } });
   const state = resistant<T, R>(key, object, true, [
     '__refresh', '__request', '__response'
   ]);
@@ -131,12 +131,12 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
     }
   }
 
-  const { cache } = options;
+  const { cache, cachePeriod } = options;
 
   if (cache === 'reload' || !(state as ReactiveResponse<unknown, true>).__finishedAt) {
     (state as ReactiveResponse<unknown, true>).__refresh();
-  } else if (options.cachePeriod) {
-    const period = (state as ReactiveResponse<unknown, true>).__finishedAt.getTime() + (options.cachePeriod || 60000);
+  } else if (cachePeriod) {
+    const period = (state as ReactiveResponse<unknown, true>).__finishedAt.getTime() + (cachePeriod || 60000);
     const now = new Date().getTime();
 
     if (now >= period) {

@@ -1,5 +1,7 @@
 # `@beerush/reactor`
 
+> For a summary of the most recent changes, please see [changelog.md](https://github.com/beerush-id/reactor/tree/main/changelog.md).
+
 Reactor is a Javascript Proxy helper to transform any object/array into a reactive object/array, recursively!
 
 For example, in Svelte, instead doing `todo.done = true; todos = todos;` we can simply
