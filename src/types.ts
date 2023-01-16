@@ -35,7 +35,7 @@ export type Merge<T, S> = {
   [K in keyof T]: T[K];
 } & S;
 
-export type SubscribeFn<T> = (fn: Subscriber<T>, init?: boolean, actions?: Action[]) => Unsubscribe;
+export type SubscribeFn<T> = (fn: Subscriber<T>, init?: boolean, actions?: Action[], props?: string[]) => Unsubscribe;
 export type Subscribe<T> = SubscribeFn<T> & {
   for: (actions: Action[], init?: boolean) => Unsubscribe;
 };
@@ -47,7 +47,7 @@ export type SubscriberFn<T> = (
   path?: string,
   target?: unknown
 ) => void;
-export type Subscriber<T> = SubscriberFn<T> & { actions?: Action[] };
+export type Subscriber<T> = SubscriberFn<T> & { actions?: Action[], props?: string[] };
 export type Unsubscribe = UnsubscribeFn & {
   unsubscribe?: () => void;
 };
@@ -56,19 +56,3 @@ type UnsubscribeFn = () => void;
 export type Setter<T> = (value?: T, prop?: keyof T, action?: string, path?: string, target?: unknown) => void;
 export type Restricted = string | number | boolean | bigint | symbol | null | undefined;
 export type ReactAble = object[] | object;
-
-// export type ShouldReact<T, R> = R extends true ? Reactive<T> : T;
-// export type ReactiveArray<T extends unknown[], R> = Merge<Store<T>, (ItemTypeOf<T> extends object
-//                                                                      ? ReactiveObject<ItemTypeOf<T>, R>[]
-//                                                                      : T)>;
-// export type ReactiveObject<T extends object, R> = Merge<Store<T>, {
-//   [K in keyof ReactiveAble<T>]: ShouldReact<ReactiveAble<T>[K], R>
-// }>;
-// export type ReactiveIt<T, R> = (T extends unknown[]
-//                                 ? ReactiveArray<T, R>
-//                                 : T extends object
-//                                   ? ReactiveObject<T, R>
-//                                   : T);
-// export type Reactive<T, R = false> = T & Merge<Store<T>, ReactiveIt<T, R>>;
-// export type Reactivities<T> = Reactive<T, true>;
-

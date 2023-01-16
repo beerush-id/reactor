@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.6.8
+
+- Allow to subscribe to specific property changes, so will get notified only when the changed property is the one that
+  listed. E.g, `.subscribe(() => {}, false, ['set'], ['name'])`, it'll get notified when the property `name` is changed.
+
 ## v0.6.7
 
 - Improve `ReactiveResponse` type.

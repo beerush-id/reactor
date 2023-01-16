@@ -33,13 +33,17 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
   const subscribers: Subscriber<T>[] = [];
   let self: Reactive<T>;
 
-  const subscribe = (handler: Subscriber<T>, init = true, actions?: Action[]): Unsubscribe => {
+  const subscribe = (handler: Subscriber<T>, init = true, actions?: Action[], props?: string[]): Unsubscribe => {
     if (init) {
       handler(self);
     }
 
-    if (actions) {
+    if (Array.isArray(actions)) {
       handler.actions = actions;
+    }
+
+    if (Array.isArray(props)) {
+      handler.props = props;
     }
 
     subscribers.push(handler);
@@ -89,10 +93,12 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
 
     for (const notify of subscribers) {
       if (typeof notify === 'function') {
-        if (action) {
-          if (!notify.actions || (notify.actions && notify.actions.includes(action))) {
-            notify(self, prop, value as never, action, path, target);
-          }
+        if (notify.props && notify.actions && notify.props.includes(prop as never) && notify.actions.includes(action as never)) {
+          notify(self, prop, value as never, action, path, target);
+        } else if (notify.props && notify.props.includes(prop as never)) {
+          notify(self, prop, value as never, action, path, target);
+        } else if (notify.actions && notify.actions.includes(action as never)) {
+          notify(self, prop, value as never, action, path, target);
         } else {
           notify(self, prop, value as never, action, path, target);
         }

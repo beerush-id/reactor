@@ -172,6 +172,12 @@ obj.subscribe(() => {
   // ...
 }, false, [ 'set', 'delete' ]);
 
+// Susbcribe for specific actions and properties. Only triggered when
+// the "name" and "email" property is changed.
+obj.subscribe(() => {
+  // ...
+}, false, ['set'], ['name', 'email']);
+
 // Subscribe for "set" property using alias.
 obj.subscribe.for([ 'set' ], (o, prop, value) => {
   console.log(`Property ${prop} changed to ${value}`);
