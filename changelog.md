@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.0
+
+- Improved typings.
+- Mark as minor version.
+
 ## v0.6.9
 
 - Updated `.subscribe.for()`, now takes 3 arguments. `(actions: string[], handler: fn, props?: string[])`.

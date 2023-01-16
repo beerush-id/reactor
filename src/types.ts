@@ -35,11 +35,16 @@ export type Merge<T, S> = {
   [K in keyof T]: T[K];
 } & S;
 
-export type SubscribeFn<T> = (fn: Subscriber<T>, init?: boolean, actions?: Action[], props?: string[]) => Unsubscribe;
+export type SubscribeFn<T> = (
+  fn: Subscriber<T>,
+  init?: boolean,
+  actions?: Action[],
+  props?: Array<keyof T> | string[]
+) => Unsubscribe;
 export type Subscribe<T> = SubscribeFn<T> & {
-  for: (actions: Action[], handler: SubscriberFn<T>, props?: string[]) => Unsubscribe;
+  for: (actions: Action[], handler: SubscriberFn<T>, props?: Array<keyof T> | string[]) => Unsubscribe;
   actions: (actions: Action[], handler: SubscriberFn<T>) => Unsubscribe;
-  props: (props: string[], handler: SubscriberFn<T>) => Unsubscribe;
+  props: (props: Array<keyof T> | string[], handler: SubscriberFn<T>) => Unsubscribe;
 };
 export type SubscriberFn<T> = (
   self?: T,
@@ -49,7 +54,7 @@ export type SubscriberFn<T> = (
   path?: string,
   target?: unknown
 ) => void;
-export type Subscriber<T> = SubscriberFn<T> & { actions?: Action[], props?: string[] };
+export type Subscriber<T> = SubscriberFn<T> & { actions?: Action[], props?: Array<keyof T> | string[] };
 export type Unsubscribe = UnsubscribeFn & {
   unsubscribe?: () => void;
 };
