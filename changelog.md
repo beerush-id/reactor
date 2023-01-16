@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.8.0
+
+- Important fixes for the subscription to specific actions or properties.
+
 ## v0.7.0
 
 - Improved typings.
