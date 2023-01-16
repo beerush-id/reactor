@@ -1,7 +1,9 @@
 import { resistant } from './store';
 import { ReactAble, Reactive, Reactivities } from './types';
 
-export type ReactiveResponse<T, R> = (R extends true ? Reactivities<T> : Reactive<T>) & {
+export type ReactiveResponse<T extends ReactAble, R extends boolean = true> =
+  (R extends true ? Reactivities<T> : Reactive<T>)
+  & {
   __status: number;
   __statusText: number;
   __finishedAt: Date;
@@ -134,14 +136,14 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
 
   const { cache, cachePeriod } = options;
 
-  if (cache === 'reload' || !(state as ReactiveResponse<unknown, true>).__finishedAt) {
-    (state as ReactiveResponse<unknown, true>).__refresh();
+  if (cache === 'reload' || !(state as ReactiveResponse<T>).__finishedAt) {
+    (state as ReactiveResponse<T>).__refresh();
   } else if (cachePeriod) {
-    const period = (state as ReactiveResponse<unknown, true>).__finishedAt.getTime() + (cachePeriod || 60000);
+    const period = (state as ReactiveResponse<T>).__finishedAt.getTime() + (cachePeriod || 60000);
     const now = new Date().getTime();
 
     if (now >= period) {
-      (state as ReactiveResponse<unknown, true>).__refresh();
+      (state as ReactiveResponse<T>).__refresh();
     }
   }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.7
+
+- Improve `ReactiveResponse` type.
+
 ## v0.6.5
 
 - Add `recursive` to the `fetch()` options to mark the object as a recursively reactive or not. Default is `true`. For
