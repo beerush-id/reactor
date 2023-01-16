@@ -37,7 +37,9 @@ export type Merge<T, S> = {
 
 export type SubscribeFn<T> = (fn: Subscriber<T>, init?: boolean, actions?: Action[], props?: string[]) => Unsubscribe;
 export type Subscribe<T> = SubscribeFn<T> & {
-  for: (actions: Action[], init?: boolean) => Unsubscribe;
+  for: (actions: Action[], handler: SubscriberFn<T>, props?: string[]) => Unsubscribe;
+  actions: (actions: Action[], handler: SubscriberFn<T>) => Unsubscribe;
+  props: (props: string[], handler: SubscriberFn<T>) => Unsubscribe;
 };
 export type SubscriberFn<T> = (
   self?: T,

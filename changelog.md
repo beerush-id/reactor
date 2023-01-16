@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.9
+
+- Updated `.subscribe.for()`, now takes 3 arguments. `(actions: string[], handler: fn, props?: string[])`.
+- Added `.subscribe.actions(actions: string[], handler: fn)` to subscribe to specific actions.
+- Added `.subscribe.props(props: string[], handler: fn)` to subscribe to specific properties.
+
 ## v0.6.8
 
 - Allow to subscribe to specific property changes, so will get notified only when the changed property is the one that

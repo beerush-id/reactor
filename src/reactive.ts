@@ -56,8 +56,16 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     return unsub;
   };
 
-  subscribe.for = (actions: Action[], handler: Subscriber<T>) => {
+  subscribe.for = (actions: Action[], handler: Subscriber<T>, props?: string[]) => {
+    return subscribe(handler, false, actions, props);
+  };
+
+  subscribe.actions = (actions: Action[], handler: Subscriber<T>) => {
     return subscribe(handler, false, actions);
+  };
+
+  subscribe.props = (props: string[], handler: Subscriber<T>) => {
+    return subscribe(handler, false, undefined, props);
   };
 
   const set = (value?: unknown, prop?: keyof T, action?: Action, path?: string, target?: unknown) => {
