@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.1
+
+- Added `setBaseURL()` to set the `fetch()` base url when no url given (or `url = ''`), so the request URL will
+  become `BASE_URL/{location.pathname}{location.earch}`.
+
 ## v0.9.0
 
 - Add `prefetch()` function that returns almost the same object as `fetch()`. The difference is, `prefetch()` don't

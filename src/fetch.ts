@@ -33,6 +33,12 @@ const activeRequests: {
   [key: string]: unknown;
 } = {};
 
+let BASE_URL = '';
+
+export function setBaseURL(url: string) {
+  BASE_URL = url;
+}
+
 export function fetch<T extends ReactAble, R extends boolean = true>(
   url: string,
   init: T,
@@ -76,7 +82,12 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
   }
 
   if (typeof window !== 'undefined' && url.replace(/\s+/g, '') === '') {
-    url = `${ location.pathname }${ location.search }`;
+    const base = BASE_URL
+      .replace(/\/+$/, '');
+    const path = `${ location.pathname }${ location.search }`
+      .replace(/^\/+/, '')
+      .replace(/\/+$/, '');
+    url = `${ base }/${ path }`;
   }
 
   const key = JSON.stringify({ url, options: { ...options, cache: null, cachePeriod: null, recursive: null } });
