@@ -7,14 +7,20 @@ do `todo.done = true` and the component will be updated, no need to call the `.s
 method or reassigning the variable.
 
 ### Getting Started
+
 - [Usage](#usage)
 - [Reactive](#reactive)
 - [Subscription](#subscription)
+    - [Handler](#subscription-handler)
 - [Named Store](#named-store)
 - [Persistent Store](#persistent-store)
+    - [Remove Persistent Store](#removing-persistent-store)
 - [Reactive Fetch](#reactive-fetch)
+    - [Prefetch](#prefetch)
+- [History](#history)
 
-> For a summary of the most recent changes, please see [changelog.md](https://github.com/beerush-id/reactor/tree/main/changelog.md).
+> For a summary of the most recent changes, please
+> see [changelog.md](https://github.com/beerush-id/reactor/tree/main/changelog.md).
 
 With reactor, we can subscribe to the data changes, and will get notified
 when the data changes. Changing the data simply assigning value.
@@ -99,6 +105,7 @@ With Reactor, we can simply do what we need (set property, push item, etc.), and
 Svelte will re-render the View without manually tells Svelte to do it.
 
 ## Usage
+
 ```shell
 yarn add @beerush/reactor
 ```
@@ -176,18 +183,18 @@ obj.subscribe(() => {
 // the "name" and "email" property is changed.
 obj.subscribe(() => {
   // ...
-}, false, ['set'], ['name', 'email']);
+}, false, [ 'set' ], [ 'name', 'email' ]);
 
 // Subscribe for "set" action and "name" property using alias.
 obj.subscribe.for([ 'set' ], (o, prop, value) => {
   console.log(`Property ${prop} changed to ${value}`);
-}, ['name']);
+}, [ 'name' ]);
 
 // Subscribe for "set" action using alias.
-obj.subscribe.actions(['set'], () => {});
+obj.subscribe.actions([ 'set' ], () => {});
 
 // Susbcribe for "name" change using alias.
-obj.subscribe.props(['name'], () => {});
+obj.subscribe.props([ 'name' ], () => {});
 
 // Subscribe for "array mutations" only.
 import { ARRAY_MUTATIONS } from '@beerush/reactor';
@@ -317,7 +324,7 @@ Upgrading the Persistent Store only necessary if you change the data structure t
 
 ```
 
-### Removing Data From Persistent Store
+### Removing Persistent Store
 
 If for some reason we need to remove some data from the Persistent Store,
 we can use `purge(NAME)` function to do it. Once removed, the data will not exist
@@ -336,7 +343,7 @@ on both memory and localStorage.
 
 ## Reactive Fetch
 
-**`featch(url: string, init: object|object[], options?: Request): ReactiveResponse;`**
+**`featch(url: string, init: object | object[], options?: Request): ReactiveResponse;`**
 
 Reactive Fetch will help us to do native `fetch()` but return a reactive object/array.
 
@@ -349,6 +356,7 @@ Reactive object returned from `fetch()` contains additional properties:
 - `__response` - The response object after request finished.
 - `__finishedAt` - Date to mark when the request is finished.
 - `__refresh()` - A function to manually refresh the data by re-requesting it.
+- `__push()` - A function to do a write request with the current url.
 
 > Make sure to use reactive fetch only for JSON response. This function will always convert the response to JSON.
 >
@@ -392,3 +400,110 @@ data is available in the cache, users can see it without waiting the request com
 
 > `{ cache: 'reload' }` option can be useful to keep displaying the cached data while refreshing the data in the
 > background.
+
+### Prefetch
+
+**`prefetch(url: string, init: object | object[], options?: Request)`**
+
+Like `fetch()`, `prefetch()` also returns a reactive object. The difference is, `prefetch()` don't do the request, so
+you need to call the `__refresh()` or `__push()` function to do the request. The returned object also has a success
+status (`__status: 200...`) without a response object.
+
+**Example**
+
+```svelte
+
+<script lang="ts">
+  import { prefetch } from '@beerush/reactor';
+
+  type User = {
+    name: string;
+  }
+
+  const form = prefetch<User>('/users', { name: '' }, { method: 'post' });
+</script>
+
+<form action="">
+  <input type="text" placeholder="Name" bind:value={$form.name}>
+
+  <button on:click={() => form.__push()} disabled={!$form.status}>
+    {#if $form.__status}
+      <span>Submit</span>
+    {:else}
+      <span>Loading...</span>
+    {/if}
+  </button>
+</form>
+
+```
+
+From the sample above, we're using `prefetch()` to create a user form state. The `<input>` element will update the
+initial data given to the `prefetch()` function, and the `<button>` will tells the form state to push the data (by doing
+a `__push()` request).
+
+The button also will be disabled while the form state is pushing the data because
+the `form.__status` will become `0` when there is an ongoing request.
+
+### Refresh
+
+**`.__refresh(options?: Request, update = true)`**
+
+The returned object from `fetch()` or `prefetch()` will have a `__refresh()` function to redo the request. The function
+can take two arguments, `options` to override the initial request options, and `update` (`true` by default) to tell the
+function to update the previous data or not.
+
+**Example**
+
+```ts
+import { fetch } from '@beerush/reactor';
+
+const state = fetch('/users/1', {});
+state.__refresh({
+  headers: {
+    Authorization: '...'
+  }
+});
+```
+
+**`.__push(options?: Request, update = true)`**
+
+The returned object from `fetch()` or `prefetch()` also will have a `__push()` function to do a write request from the
+current URL. If no options given or no `body` in the given request options, the function will send the initial data.
+
+The default method is `post`. To create a `put` or `patch` request, you can pass it to the request options, whether at
+the initial options or the overriding options.
+
+**Example**
+
+```ts
+import { prefetch } from '@beerush/reactor';
+
+const state = prefetch('/users/1', { name: 'John' }, { method: 'put' });
+state.name = 'John Smith';
+state.__push();
+
+```
+
+## History
+
+**`watch(state: Reactive): History`**
+
+A watch function can help us to record the changed properties of an object/array. This can be useful to only
+push the changed data to the API.
+
+> Watch function simply subscribe to the reactive object and then store the changed property and its value. This
+> function doesn't use a periodical checking, so it won't cause any performance issue.
+
+**Example**
+
+```ts
+import { prefetch, reactive, watch } from '@beerush/reactor';
+
+const user = reactive({ name: 'John', age: 10 });
+const history = watch(user);
+const form = prefetch('/users/1', history.changes, { method: 'put' });
+
+user.name = 'John Smith';
+form.__push(); // PUT { name: 'John Smith' }
+
+```

@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.9.0
+
+- Add `prefetch()` function that returns almost the same object as `fetch()`. The difference is, `prefetch()` don't
+  do the request, so you need to call the `__refresh()` to run the request. The returned object also has a success
+  status (`__status: 200, ...`) without a `response` object.
+- The request only happens in browser or any environment where `window.fetch` exist. This could fix the unused request
+  during SSR since the renders doesn't actually wait for the request because the returned object is a Reactive object (
+  non-blocking), not a promise.
+- When calling `fetch()` or `prefetch()` but the `url` is an empty string, it'll automatically use
+  the `location.pathname` and `location.search` to prevent accessing to a wrong cache.
+- The `__refresh()` function now can accept two arguments, `opt` and `update`. The `opt` is a request options to
+  override the initial options, and the `update` argument is to tell the function to update the data or not (default
+  is `true`).
+- Added `__push()` function to the `ReactiveResponse` object to do a write request. This function also can take two
+  arguments like `__refresh()`. If no options defined or no `body` in the options, the function will use the initial
+  data as the request `body`. By default, this function will do a `post` request. You can set the `method` options
+  to `put` or `patch` if you don't want to do a `post` request.
+- Added `watch()` function to record the changed properties of an object/array.
+- The `__request` object now held the url and request options (`{ url, options }`) for detailed reference.
+
 ## v0.8.0
 
 - Important fixes for the subscription to specific actions or properties.

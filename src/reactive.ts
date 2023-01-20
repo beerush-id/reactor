@@ -102,11 +102,11 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     for (const notify of subscribers) {
       if (typeof notify === 'function') {
         if (notify.props && notify.actions) {
-          if (notify.props.includes(prop as never) && notify.actions.includes(action as never)) {
+          if (notify.props.includes((path || prop) as never) && notify.actions.includes(action as never)) {
             notify(self, prop, value as never, action, path, target);
           }
         } else if (notify.props) {
-          if (notify.props.includes(prop as never)) {
+          if (notify.props.includes((path || prop) as never)) {
             notify(self, prop, value as never, action, path, target);
           }
         } else if (notify.actions) {
