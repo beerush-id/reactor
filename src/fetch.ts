@@ -1,3 +1,4 @@
+import { replace, replaceItems } from '@beerush/utils';
 import { resistant } from './store';
 import { ReactAble, Reactive, Reactivities } from './types';
 
@@ -115,19 +116,9 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
                 .then(data => {
                   if (update) {
                     if (Array.isArray(data) && Array.isArray(state)) {
-                      (state as unknown[]).splice(0, (state as unknown[]).length, ...data);
+                      replaceItems(state, data);
                     } else {
-                      for (const [ key, value ] of Object.entries(data)) {
-                        if (state[key as never] !== value) {
-                          state[key as never] = value as never;
-                        }
-                      }
-
-                      Object.keys(state).forEach(key => {
-                        if (!data.hasOwnProperty(key)) {
-                          delete state[key as never];
-                        }
-                      });
+                      replace(state, data);
                     }
                   }
 

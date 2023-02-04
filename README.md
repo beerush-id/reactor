@@ -484,15 +484,15 @@ state.__push();
 
 ```
 
-## History
+## Watch
 
-**`watch(state: Reactive): History`**
+**`watch(state: Reactive, debounce?: number): History`**
+
+- `state` - A reactive object to watch.
+- `debounce` - A timeout to cancel the previous change and apply new change.
 
 A watch function can help us to record the changed properties of an object/array. This can be useful to only
 push the changed data to the API.
-
-> Watch function simply subscribe to the reactive object and then store the changed property and its value. This
-> function doesn't use a periodical checking, so it won't cause any performance issue.
 
 **Example**
 
@@ -507,3 +507,25 @@ user.name = 'John Smith';
 form.__push(); // PUT { name: 'John Smith' }
 
 ```
+
+> Watch function simply subscribe to the reactive object and then store the changed property and its value. This
+> function doesn't use a periodical checking, so it won't cause any performance issue.
+
+> Watch function is using `debouce` time to prevent storing unnecessary history of a fast changed properties. For
+> example, if you type fast, the changes will be recorded after you stop typing. The default debounce time is `500ms`.
+> 
+> To change the global/default debounce time, you can call `watch.debounce(duration: number)`.
+
+### History
+
+**History** is the returned object when you call `watch()`. History will have the following properties:
+
+- `.changes` - An object of the changed properties.
+- `.changed` - A boolean that mark does the state is changed or not.
+- `.canUndo` - A boolean that mark does the history has changes to undo.
+- `.canRedo` - A boolean that mark does the history has changes to redo.
+- `.undo()` - A function to undo the changes, one by one.
+- `.redo()` - A function to redo the changes, one by one.
+- `.reset()` - A function to reset to the initial state by undoing the changes.
+- `.clear()` - A function to clear the changes, mark it as unchanged.
+- `.forget()` - A function to stop watching the changes.

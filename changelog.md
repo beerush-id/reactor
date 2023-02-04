@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.10.0
+
+- Added `.undo()` to the `watch()` history.
+- Added `.canUndo` to the `watch()` history.
+- Added `.redo()` to the `watch()` history.
+- Added `.canRedo` to the `watch()` history.
+- Added `.clear()` to the `watch()` history to clear the change lists.
+- Changed `.reset()` function to reset the changes by undoing to the initial state.
+- Changes will be debounced by 500ms by default.
+- Added `watch(state, debounce: number)` to set the individual debounce time.
+- Added `watch.debounce(time: number)` to set the global debounce time.
+- Improved `fetch()` function.
+
 ## v0.9.1
 
 - Added `setBaseURL()` to set the `fetch()` base url when no url given (or `url = ''`), so the request URL will
