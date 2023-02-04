@@ -21,6 +21,8 @@ method or reassigning the variable.
 
 > For a summary of the most recent changes, please
 > see [changelog.md](https://github.com/beerush-id/reactor/tree/main/changelog.md).
+ 
+> Visit the [**`API Docs`**](https://beerush-id.github.io/reactor/)
 
 With reactor, we can subscribe to the data changes, and will get notified
 when the data changes. Changing the data simply assigning value.
