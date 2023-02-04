@@ -119,6 +119,10 @@ export function watch<T extends ReactAble>(state: Reactive<T>, debounce?: number
       undoList.push({ action, path, value, before });
       write(history.changes, path as any, value as any);
 
+      if (redoList.length) {
+        redoList.splice(0, redoList.length);
+      }
+
       history.set({} as never, 'changes', 'set');
     }, typeof debounce === 'number' ? debounce : HISTORY_DEBOUNCE);
   };

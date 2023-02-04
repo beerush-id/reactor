@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.10.2
+
+- Fix redo list not cleared when new changes recorded.
+
 ## v0.10.0
 
 - Added `.undo()` to the `watch()` history.
