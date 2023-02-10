@@ -1,6 +1,6 @@
 {
   "name": "@beerush/reactor",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "Javascript Reactive Proxy to transform any object/array into reactive object/array, recursively!",
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
   "homepage": "https://github.com/beerush-id/reactor",
@@ -12,7 +12,7 @@
     ".": {
       "types": "./lib/esm/index.d.ts",
       "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.cjs"
+      "require": "./lib/cjs/index.js"
     }
   },
   "directories": {
