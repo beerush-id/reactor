@@ -1,6 +1,6 @@
 {
   "name": "@beerush/reactor",
-  "version": "0.10.3",
+  "version": "0.11.0",
   "description": "Javascript Reactive Proxy to transform any object/array into reactive object/array, recursively!",
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
   "homepage": "https://github.com/beerush-id/reactor",
@@ -54,7 +54,8 @@
     "reactive",
     "object"
   ],
+  "type": "module",
   "dependencies": {
-    "@beerush/utils": "^0.0.3"
+    "@beerush/utils": "^0.0.7"
   }
 }

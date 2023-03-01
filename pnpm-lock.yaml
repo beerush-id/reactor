@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@beerush/utils': ^0.0.3
+  '@beerush/utils': ^0.0.7
   '@types/jest': ^29.4.0
   jest: ^29.4.1
   rimraf: ^3.0.2
@@ -10,7 +10,7 @@ specifiers:
   typescript: ^4.9.4
 
 dependencies:
-  '@beerush/utils': 0.0.3
+  '@beerush/utils': 0.0.7
 
 devDependencies:
   '@types/jest': 29.4.0
@@ -362,8 +362,9 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@beerush/utils/0.0.3:
-    resolution: {integrity: sha512-D71s9ZuAPzcD86K+9DCX4HjitKL68BEX74HbVlgGqmwDFXG5rcINFn+robRlHAVtdabBkKR/vCYMagOCd5CTng==}
+  /@beerush/utils/0.0.7:
+    resolution: {integrity: sha512-E2PlVUUuBYFT8LuKT0evvxi/WjemxfD7hA98fi0u7UC3Lh6nmjdg9O/SNTkx3yVpFtWhWn3yAiuMf4fiYy0K0w==}
+    engines: {node: '>=16.0.0', typescript: '>=4.9.5'}
     dev: false
 
   /@istanbuljs/load-nyc-config/1.1.0:
