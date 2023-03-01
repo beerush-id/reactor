@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.12.0
+- Using ES Module.
+- NodeJS Support.
+
 ## v0.10.2
 
 - Fix redo list not cleared when new changes recorded.
