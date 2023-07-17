@@ -1,5 +1,5 @@
 import { replace, replaceItems } from '@beerush/utils';
-import { resistant } from './store';
+import { forget, resistant } from './store';
 import { ReactAble, Reactive, Reactivities } from './types';
 
 export type ReactiveResponse<T extends ReactAble, R extends boolean = true> =
@@ -16,6 +16,7 @@ export type ReactiveResponse<T extends ReactAble, R extends boolean = true> =
 }
 
 export type ReactiveRequest = Request & {
+  backendCache?: boolean;
   cachePeriod?: number;
   recursive?: boolean;
 }
@@ -38,6 +39,20 @@ let BASE_URL = '';
 
 export function setBaseURL(url: string) {
   BASE_URL = url;
+}
+
+export async function dfetch<T extends ReactAble, R extends boolean = true>(
+  url: string,
+  init: T,
+  options: Partial<ReactiveRequest> = {}
+): Promise<ReactiveResponse<T, R>> {
+  if (typeof window === 'undefined') {
+    const state = fetch(url, init, options);
+    await new Promise(resolve => state.subscribe(resolve, false));
+    return state;
+  } else {
+    return fetch(url, init, options);
+  }
 }
 
 export function fetch<T extends ReactAble, R extends boolean = true>(
@@ -99,7 +114,7 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
   if (!('__refresh' in state)) {
     Object.assign(state, {
       __refresh: (opt?: Partial<ReactiveRequest>, update = true) => {
-        if (typeof window === 'undefined' || activeRequests[key]) {
+        if (activeRequests[key]) {
           return;
         }
 
@@ -157,6 +172,10 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
           })
           .finally(() => {
             delete activeRequests[key];
+
+            if (typeof window !== 'undefined') {
+              forget(key);
+            }
           });
       },
       __push: (opt?: Partial<ReactiveRequest>, update = true) => {
