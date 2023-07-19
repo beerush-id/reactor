@@ -1,27 +1,27 @@
 import { replace, replaceItems } from '@beerush/utils';
-import { forget, resistant } from './store';
-import { ReactAble, Reactive, Reactivities } from './types';
+import { forget, resistant } from './store.js';
+import type { ReactAble, Reactive, Reactivities } from './types.js';
 
-export type ReactiveResponse<T extends ReactAble, R extends boolean = true> =
-  (R extends true ? Reactivities<T> : Reactive<T>)
-  & {
+export type ReactiveResponse<T extends ReactAble, R extends boolean = true> = (R extends true
+  ? Reactivities<T>
+  : Reactive<T>) & {
   __status: number;
   __statusText: number;
   __finishedAt?: Date | void;
-  __request?: { url: string, options: Partial<ReactiveRequest> };
+  __request?: { url: string; options: Partial<ReactiveRequest> };
   __response?: Response;
   __error?: Error;
   __refresh(opt?: Partial<ReactiveRequest>, update?: boolean): void;
   __push(opt?: Partial<ReactiveRequest>, update?: boolean): void;
-}
+};
 
 export type ReactiveRequest = Request & {
   backendCache?: boolean;
   cachePeriod?: number;
   recursive?: boolean;
-}
+};
 
-declare var global: any;
+declare const global: any;
 
 let load: (url: string | Response, options?: Request) => Promise<Response>;
 
@@ -48,7 +48,7 @@ export async function dfetch<T extends ReactAble, R extends boolean = true>(
 ): Promise<ReactiveResponse<T, R>> {
   if (typeof window === 'undefined') {
     const state = fetch(url, init, options);
-    await new Promise(resolve => state.subscribe(resolve, false));
+    await new Promise((resolve) => state.subscribe(resolve, false));
     return state;
   } else {
     return fetch(url, init, options);
@@ -64,14 +64,15 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
     __status: 0,
     __statusText: '',
     __error: null,
-    __finishedAt: null
+    __finishedAt: null,
   } as never);
   const { cache, cachePeriod } = options;
 
   if (cache === 'reload' || !(state as ReactiveResponse<T>).__finishedAt) {
     (state as ReactiveResponse<T>).__refresh();
   } else if (cachePeriod) {
-    const period = ((state as ReactiveResponse<T>).__finishedAt as Date).getTime() + (cachePeriod || 60000);
+    const period =
+      ((state as ReactiveResponse<T>).__finishedAt as Date).getTime() + (cachePeriod || 60000);
     const now = new Date().getTime();
 
     if (now >= period) {
@@ -98,17 +99,19 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
   }
 
   if (typeof window !== 'undefined' && url.replace(/\s+/g, '') === '') {
-    const base = BASE_URL
-      .replace(/\/+$/, '');
-    const path = `${ location.pathname }${ location.search }`
-      .replace(/^\/+/, '')
-      .replace(/\/+$/, '');
-    url = `${ base }/${ path }`;
+    const base = BASE_URL.replace(/\/+$/, '');
+    const path = `${location.pathname}${location.search}`.replace(/^\/+/, '').replace(/\/+$/, '');
+    url = `${base}/${path}`;
   }
 
-  const key = JSON.stringify({ url, options: { ...options, cache: null, cachePeriod: null, recursive: null } });
+  const key = JSON.stringify({
+    url,
+    options: { ...options, cache: null, cachePeriod: null, recursive: null },
+  });
   const state = resistant<T, R>(key, init, options.recursive, [
-    '__refresh', '__request', '__response'
+    '__refresh',
+    '__request',
+    '__response',
   ]);
 
   if (!('__refresh' in state)) {
@@ -125,10 +128,11 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
         });
 
         activeRequests[key] = load(url, (opt || options) as never)
-          .then(res => {
+          .then((res) => {
             if (res.status < 300) {
-              res.json()
-                .then(data => {
+              res
+                .json()
+                .then((data) => {
                   if (update) {
                     if (Array.isArray(data) && Array.isArray(state)) {
                       replaceItems(state, data);
@@ -144,7 +148,7 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
                     __finishedAt: new Date(),
                   });
                 })
-                .catch(error => {
+                .catch((error) => {
                   Object.assign(state, {
                     __status: 500,
                     __statusText: error.message,
@@ -162,7 +166,7 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
               });
             }
           })
-          .catch(error => {
+          .catch((error) => {
             Object.assign(state, {
               __status: 500,
               __statusText: error.message,
@@ -180,18 +184,21 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
       },
       __push: (opt?: Partial<ReactiveRequest>, update = true) => {
         if (!opt || (opt && !opt.body)) {
-          (state as ReactiveResponse<T>).__refresh({
-            method: 'post',
-            body: JSON.stringify(init) as never,
-            ...(opt || options || {}),
-          }, update);
+          (state as ReactiveResponse<T>).__refresh(
+            {
+              method: 'post',
+              body: JSON.stringify(init) as never,
+              ...(opt || options || {}),
+            },
+            update
+          );
         } else {
           (state as ReactiveResponse<T>).__refresh({
             method: 'post',
-            ...(opt || options || {})
+            ...(opt || options || {}),
           });
         }
-      }
+      },
     });
 
     Object.assign(state, {
@@ -200,8 +207,16 @@ export function prefetch<T extends ReactAble, R extends boolean = true>(
       __response: null,
     });
 
-    for (const key of
-      [ '__status', '__statusText', '__error', '__finishedAt', '__request', '__response', '__refresh', '__push' ]) {
+    for (const key of [
+      '__status',
+      '__statusText',
+      '__error',
+      '__finishedAt',
+      '__request',
+      '__response',
+      '__refresh',
+      '__push',
+    ]) {
       Object.defineProperty(state, key, { enumerable: false });
     }
   }

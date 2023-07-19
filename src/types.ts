@@ -63,3 +63,10 @@ type UnsubscribeFn = () => void;
 export type Setter<T> = (value?: T, prop?: keyof T, action?: string, path?: string, target?: unknown) => void;
 export type Restricted = string | number | boolean | bigint | symbol | null | undefined;
 export type ReactAble = object[] | object;
+
+export type StateChangeMessage = {
+  store: string;
+  action: Action;
+  path: string;
+  value: unknown;
+}

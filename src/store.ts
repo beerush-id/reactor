@@ -1,12 +1,13 @@
-import { reactive } from './reactive';
-import type { ReactAble, Reactive, Reactivities } from './types';
+import { read, write } from '@beerush/utils';
+import { ARRAY_MUTATIONS, OBJECT_MUTATIONS, reactive } from './reactive.js';
+import type { ArrayAction, ObjectAction, ReactAble, Reactive, Reactivities, StateChangeMessage } from './types.js';
 
 const STORE_NAME = 'reactor-persistent-data';
 
 type PersistentData = {
   data: Reactive<unknown>;
   recursive?: boolean;
-}
+};
 
 export let ReactiveStore: {
   [key: string]: Reactive<never>;
@@ -16,19 +17,24 @@ export let PersistentStore: {
   version: string;
   store: {
     [key: string]: PersistentData;
-  },
-  clear: () => void,
-  write: () => void,
+  };
+  claims: string[];
+  reflects?: string[];
+  channel?: BroadcastChannel;
+  clear: () => void;
+  write: () => void;
 } = {
   version: '1.0.0',
   store: {},
+  claims: [],
   clear: () => {
     PersistentStore.store = {};
     PersistentStore.write();
   },
   write: () => {
     try {
-      localStorage.setItem(STORE_NAME, JSON.stringify(PersistentStore));
+      const { version, store } = PersistentStore;
+      localStorage.setItem(STORE_NAME, JSON.stringify({ version, store }));
     } catch (error) {
       console.warn('localStorage is not accessible, write ignored!');
       console.error(error);
@@ -52,10 +58,14 @@ if (typeof window === 'object') {
       if (data) {
         Object.assign(PersistentStore, JSON.parse(data));
 
-        for (const [ , value ] of Object.entries(PersistentStore.store)) {
-          value.data = reactive(value.data, value.recursive);
-          value.data.subscribe(() => PersistentStore.write());
+        for (const [ name ] of Object.entries(PersistentStore.store)) {
+          PersistentStore.claims.push(name);
         }
+        //
+        // for (const [ , value ] of Object.entries(PersistentStore.store)) {
+        //   value.data = reactive(value.data, value.recursive);
+        //   value.data.subscribe(() => PersistentStore.write());
+        // }
       } else {
         PersistentStore.write();
       }
@@ -65,6 +75,76 @@ if (typeof window === 'object') {
     }
 
     window['PersistentStore' as never] = PersistentStore as never;
+  }
+
+  if (!PersistentStore.channel) {
+    const channel = new BroadcastChannel(STORE_NAME);
+
+    channel.addEventListener('message', ({ data }: MessageEvent<string>) => {
+      try {
+        reflect(JSON.parse(data));
+      } catch (error) {
+        console.warn('Unable to reflect Changes!');
+        console.error(error);
+      }
+    });
+
+    PersistentStore.channel = channel;
+  }
+}
+
+export function reflect({ store, path, action, value }: StateChangeMessage) {
+  if (!store || !path) {
+    return;
+  }
+
+  const state = PersistentStore.store[store]?.data;
+
+  if (!state) {
+    return;
+  }
+
+  PersistentStore.reflects?.push(`${ store }:${ path }:${ action }`);
+
+  if (OBJECT_MUTATIONS.includes(action as ObjectAction)) {
+    if (action === 'set') {
+      write(state, path, value);
+    } else {
+      const pathParts = path.split('.');
+
+      if (pathParts.length > 1) {
+        const key = pathParts.pop();
+        const target = read(state, pathParts.join('.'));
+
+        if (target && typeof target === 'object') {
+          delete target[key as never];
+        }
+      } else {
+        delete state[path as never];
+      }
+    }
+  } else if (ARRAY_MUTATIONS.includes(action as ArrayAction)) {
+    const target = read(state, path);
+
+    if (Array.isArray(target)) {
+      try {
+        target[action as never](...(Array.isArray(value) ? value : [ value ]));
+      } catch (error) {
+        console.warn('Unable to reflect Changes!');
+        console.error(error);
+      }
+    }
+  }
+}
+
+export function publish(message: StateChangeMessage) {
+  if (PersistentStore.channel) {
+    try {
+      PersistentStore.channel.postMessage(JSON.stringify(message));
+    } catch (error) {
+      console.warn('Unable to publish Changes!');
+      console.error(error);
+    }
   }
 }
 
@@ -124,9 +204,44 @@ export function persistent<T extends ReactAble, R extends boolean = true>(
     return reactive<T>(object, recursive) as Reactive<T> as never;
   }
 
+  if (PersistentStore.claims?.includes(name)) {
+    const data = PersistentStore.store[name]?.data;
+
+    Object.assign(object, data || {});
+
+    const state = reactive(object, recursive, protect) as Reactive<unknown>;
+    state.subscribe((self, prop, value, action, path) => {
+      const key = `${ name }:${ path }:${ action }`;
+      const index = PersistentStore.reflects?.indexOf(key);
+
+      if (index !== undefined && index > -1) {
+        PersistentStore.reflects?.splice(index, 1);
+        return;
+      } else {
+        publish({ store: name, path, value, action } as never);
+        PersistentStore.write();
+      }
+    }, false);
+
+    PersistentStore.store[name] = { data: state, recursive };
+    PersistentStore.claims.splice(PersistentStore.claims.indexOf(name), 1);
+  }
+
   if (!PersistentStore.store[name]) {
     const data: Reactive<unknown> = reactive<T>(object, recursive, protect) as Reactive<unknown>;
-    data.subscribe(() => PersistentStore.write());
+    data.subscribe((self, prop, value, action, path) => {
+      const key = `${ name }:${ path }:${ action }`;
+      const index = PersistentStore.reflects?.indexOf(key);
+
+      if (index !== undefined && index > -1) {
+        PersistentStore.reflects?.splice(index, 1);
+        return;
+      } else {
+        publish({ store: name, path, value, action } as never);
+        PersistentStore.write();
+      }
+    }, false);
+
     PersistentStore.store[name] = { data, recursive };
     PersistentStore.write();
   }

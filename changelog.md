@@ -1,6 +1,13 @@
 # Changelog
 
+## v0.13.0
+
+- Updated relative paths to use `.js` extension.
+- Improved Persistent Store to makes converting `class` object into Reactive Persistent Object is possible.
+- Added functionality to sync the persistent states across browser windows/tabs!
+
 ## v0.12.0
+
 - Using ES Module.
 - NodeJS Support.
 

@@ -1,6 +1,6 @@
 import { read, write } from '@beerush/utils';
-import { reactive } from './reactive';
-import { Action, ReactAble, Reactive } from './types';
+import { reactive } from './reactive.js';
+import { Action, ReactAble, Reactive } from './types.js';
 
 export type Change = {
   /** The changed path */
@@ -11,7 +11,7 @@ export type Change = {
   value: unknown;
   /** Previous value */
   before: unknown;
-}
+};
 
 export type ChangeList = Change[];
 
@@ -35,7 +35,7 @@ export type History<T extends ReactAble> = {
   readonly canUndo?: boolean;
   /** Can we call `.redo()`? */
   readonly canRedo?: boolean;
-}
+};
 
 export let HISTORY_DEBOUNCE = 500;
 
@@ -71,7 +71,10 @@ export let HISTORY_DEBOUNCE = 500;
  * @param {number} debounce - Debounce time in ms.
  * @returns {Reactive<History<T>>}
  */
-export function watch<T extends ReactAble>(state: Reactive<T>, debounce?: number): Reactive<History<T>> {
+export function watch<T extends ReactAble>(
+  state: Reactive<T>,
+  debounce?: number
+): Reactive<History<T>> {
   const timers: { [key: string]: number } = {};
   const origin = JSON.parse(JSON.stringify(state));
   const undoList: ChangeList = [];
@@ -80,23 +83,20 @@ export function watch<T extends ReactAble>(state: Reactive<T>, debounce?: number
   let selfChange = false;
 
   const changes: Partial<T> = {};
-  const forget = state.subscribe((
-    self,
-    prop,
-    value,
-    action,
-    path
-  ) => {
-    if (path && ![
-      '__status',
-      '__statusText',
-      '__error',
-      '__finishedAt',
-      '__request',
-      '__response',
-      '__refresh',
-      '__push'
-    ].includes(path as never)) {
+  const forget = state.subscribe((self, prop, value, action, path) => {
+    if (
+      path &&
+      ![
+        '__status',
+        '__statusText',
+        '__error',
+        '__finishedAt',
+        '__request',
+        '__response',
+        '__refresh',
+        '__push',
+      ].includes(path as never)
+    ) {
       if (path && action) {
         if (selfChange) {
           selfChange = false;
@@ -112,19 +112,22 @@ export function watch<T extends ReactAble>(state: Reactive<T>, debounce?: number
       clearTimeout(timers[path]);
     }
 
-    timers[path] = setTimeout(() => {
-      const prev = undoList.filter(c => c.path === path);
-      const before = prev.length ? prev[prev.length - 1].value : read(origin, path);
+    (timers as any)[path] = setTimeout(
+      () => {
+        const prev = undoList.filter((c) => c.path === path);
+        const before = prev.length ? prev[prev.length - 1].value : read(origin, path);
 
-      undoList.push({ action, path, value, before });
-      write(history.changes, path as any, value as any);
+        undoList.push({ action, path, value, before });
+        write(history.changes, path as any, value as any);
 
-      if (redoList.length) {
-        redoList.splice(0, redoList.length);
-      }
+        if (redoList.length) {
+          redoList.splice(0, redoList.length);
+        }
 
-      history.set({} as never, 'changes', 'set');
-    }, typeof debounce === 'number' ? debounce : HISTORY_DEBOUNCE);
+        history.set({} as never, 'changes', 'set');
+      },
+      typeof debounce === 'number' ? debounce : HISTORY_DEBOUNCE
+    );
   };
 
   const reset = () => {
@@ -186,23 +189,26 @@ export function watch<T extends ReactAble>(state: Reactive<T>, debounce?: number
   };
   redo.list = redoList;
 
-  const history = reactive<History<T>, false>({
-    changes,
-    undo,
-    redo,
-    reset,
-    clear,
-    forget,
-    get changed() {
-      return Object.keys(changes).length > 0;
+  const history = reactive<History<T>, false>(
+    {
+      changes,
+      undo,
+      redo,
+      reset,
+      clear,
+      forget,
+      get changed() {
+        return Object.keys(changes).length > 0;
+      },
+      get canUndo() {
+        return undoList.length > 0;
+      },
+      get canRedo() {
+        return redoList.length > 0;
+      },
     },
-    get canUndo() {
-      return undoList.length > 0;
-    },
-    get canRedo() {
-      return redoList.length > 0;
-    }
-  }, false);
+    false
+  );
 
   return history;
 }

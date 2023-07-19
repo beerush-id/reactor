@@ -8,8 +8,8 @@ import {
   Reactivities,
   Store,
   Subscriber,
-  Unsubscribe
-} from './types';
+  Unsubscribe,
+} from './types.js';
 
 export const OBJECT_MUTATIONS: ObjectAction[] = [ 'set', 'delete' ];
 export const ARRAY_MUTATIONS: ArrayAction[] = [
@@ -21,7 +21,7 @@ export const ARRAY_MUTATIONS: ArrayAction[] = [
   'unshift',
   'splice',
   'sort',
-  'reverse'
+  'reverse',
 ];
 
 export function reactive<T extends ReactAble, R extends boolean = false>(
@@ -33,7 +33,12 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
   const subscribers: Subscriber<T>[] = [];
   let self: Reactive<T>;
 
-  const subscribe = (handler: Subscriber<T>, init = true, actions?: Action[], props?: string[]): Unsubscribe => {
+  const subscribe = (
+    handler: Subscriber<T>,
+    init = true,
+    actions?: Action[],
+    props?: string[]
+  ): Unsubscribe => {
     if (init) {
       handler(self);
     }
@@ -68,18 +73,24 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     return subscribe(handler, false, undefined, props);
   };
 
-  const set = (value?: unknown, prop?: keyof T, action?: Action, path?: string, target?: unknown) => {
+  const set = (
+    value?: unknown,
+    prop?: keyof T,
+    action?: Action,
+    path?: string,
+    target?: unknown
+  ) => {
     if (value === self || (!value && !action)) {
       return;
     }
 
-    if (typeof prop as never === 'string') {
+    if ((typeof prop as never) === 'string') {
       if (Array.isArray(reflected)) {
         if (target && typeof path === 'string') {
           const i = (reflected as T[]).indexOf(target as never);
 
           if (i > -1) {
-            path = path ? `${ i }.${ path }` : i as never;
+            path = path ? `${ i }.${ path }` : (i as never);
             target = self;
           }
         } else {
@@ -102,7 +113,10 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     for (const notify of subscribers) {
       if (typeof notify === 'function') {
         if (notify.props && notify.actions) {
-          if (notify.props.includes((path || prop) as never) && notify.actions.includes(action as never)) {
+          if (
+            notify.props.includes((path || prop) as never) &&
+            notify.actions.includes(action as never)
+          ) {
             notify(self, prop, value as never, action, path, target);
           }
         } else if (notify.props) {
@@ -121,7 +135,12 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
   };
 
   const handler: ProxyHandler<T> = {
-    set: (target: T, prop: string, newValue: ReactAble | Reactive<ReactAble>, receiver: unknown): boolean => {
+    set: (
+      target: T,
+      prop: string,
+      newValue: ReactAble | Reactive<ReactAble>,
+      receiver: unknown
+    ): boolean => {
       if ([ 'set', 'subscribe' ].includes(prop)) {
         return true;
       }
@@ -185,7 +204,7 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     for (const method of ARRAY_MUTATIONS) {
       const fn = reflected[method as never];
 
-      (reflected)[method as never] = (...args: unknown[]) => {
+      (reflected as any)[method as never] = (...args: unknown[]) => {
         const result = (fn as any).bind(reflected)(...args);
         reactAllItems(reflected as never, recursive);
         self.set(args as never, '' as keyof T, method);
@@ -260,5 +279,9 @@ function reactAllItems<T extends ReactAble>(proxy: Reactive<T>, recursive?: bool
 }
 
 function typeOf(obj: unknown): GenericType {
-  return toString.call(obj).replace(/\[object /, '').replace(/]/, '').toLowerCase() as GenericType;
+  return toString
+    .call(obj)
+    .replace(/\[object /, '')
+    .replace(/]/, '')
+    .toLowerCase() as GenericType;
 }
