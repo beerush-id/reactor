@@ -1,6 +1,6 @@
 import { read, write } from '@beerush/utils';
 import { reactive } from './reactive.js';
-import { Action, ReactAble, Reactive } from './types.js';
+import type { Action, ReactAble, Reactive } from './types.js';
 
 export type Change = {
   /** The changed path */
