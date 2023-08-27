@@ -108,13 +108,13 @@ export function reflect({ store, path, action, value }: StateChangeMessage) {
 
   if (OBJECT_MUTATIONS.includes(action as ObjectAction)) {
     if (action === 'set') {
-      write(state, path, value);
+      write(state, path as never, value as never);
     } else {
       const pathParts = path.split('.');
 
       if (pathParts.length > 1) {
         const key = pathParts.pop();
-        const target = read(state, pathParts.join('.'));
+        const target = read(state, pathParts.join('.') as never);
 
         if (target && typeof target === 'object') {
           delete target[key as never];
@@ -124,7 +124,7 @@ export function reflect({ store, path, action, value }: StateChangeMessage) {
       }
     }
   } else if (ARRAY_MUTATIONS.includes(action as ArrayAction)) {
-    const target = read(state, path);
+    const target = read(state, path as keyof typeof state);
 
     if (Array.isArray(target)) {
       try {
@@ -167,7 +167,7 @@ export function resistant<T extends ReactAble, R extends boolean = true>(
   name: string,
   object: T,
   recursive = true,
-  protect?: string[]
+  protect?: string[],
 ): R extends true ? Reactivities<T> : Reactive<T> {
   if (typeof window === 'undefined') {
     return reactive<T, R>(object, recursive) as Reactive<T> as never;
@@ -198,7 +198,7 @@ export function persistent<T extends ReactAble, R extends boolean = true>(
   name: string,
   object: T,
   recursive = true,
-  protect?: string[]
+  protect?: string[],
 ): R extends true ? Reactivities<T> : Reactive<T> {
   if (typeof window === 'undefined') {
     return reactive<T>(object, recursive) as Reactive<T> as never;

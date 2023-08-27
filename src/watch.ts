@@ -73,7 +73,7 @@ export let HISTORY_DEBOUNCE = 500;
  */
 export function watch<T extends ReactAble>(
   state: Reactive<T>,
-  debounce?: number
+  debounce?: number,
 ): Reactive<History<T>> {
   const timers: { [key: string]: number } = {};
   const origin = JSON.parse(JSON.stringify(state));
@@ -115,7 +115,7 @@ export function watch<T extends ReactAble>(
     (timers as any)[path] = setTimeout(
       () => {
         const prev = undoList.filter((c) => c.path === path);
-        const before = prev.length ? prev[prev.length - 1].value : read(origin, path);
+        const before = prev.length ? prev[prev.length - 1].value : read(origin as never, path as never);
 
         undoList.push({ action, path, value, before });
         write(history.changes, path as any, value as any);
@@ -126,7 +126,7 @@ export function watch<T extends ReactAble>(
 
         history.set({} as never, 'changes', 'set');
       },
-      typeof debounce === 'number' ? debounce : HISTORY_DEBOUNCE
+      typeof debounce === 'number' ? debounce : HISTORY_DEBOUNCE,
     );
   };
 
@@ -207,7 +207,7 @@ export function watch<T extends ReactAble>(
         return redoList.length > 0;
       },
     },
-    false
+    false,
   );
 
   return history;

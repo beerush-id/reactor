@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.14.0
+
+- Hybrid module.
+- Dependency updates.
+
 ## v0.13.0
 
 - Updated relative paths to use `.js` extension.
