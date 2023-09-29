@@ -27,7 +27,7 @@ export const ARRAY_MUTATIONS: ArrayAction[] = [
 export function reactive<T extends ReactAble, R extends boolean = false>(
   source: T,
   recursive?: boolean,
-  protect: string[] = [ 'set', 'subscribe' ]
+  protect: string[] = [ 'set', 'subscribe' ],
 ): R extends true ? Reactivities<T> : Reactive<T> {
   const reflected: T & Store<T> = source as never;
   const subscribers: Subscriber<T>[] = [];
@@ -37,7 +37,7 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     handler: Subscriber<T>,
     init = true,
     actions?: Action[],
-    props?: string[]
+    props?: string[],
   ): Unsubscribe => {
     if (init) {
       handler(self);
@@ -78,7 +78,7 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     prop?: keyof T,
     action?: Action,
     path?: string,
-    target?: unknown
+    target?: unknown,
   ) => {
     if (value === self || (!value && !action)) {
       return;
@@ -139,7 +139,7 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
       target: T,
       prop: string,
       newValue: ReactAble | Reactive<ReactAble>,
-      receiver: unknown
+      receiver: unknown,
     ): boolean => {
       if ([ 'set', 'subscribe' ].includes(prop)) {
         return true;

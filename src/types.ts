@@ -14,7 +14,37 @@ export type ArrayAction =
   | 'reverse';
 export type Action = ObjectAction | ArrayAction;
 
-export type Store<T> = { subscribe: Subscribe<T>; set: Setter<T>; }
+export type Reader<T> = (value: T) => void;
+
+export interface Readable<T> {
+  subscribe(this: void, run: Reader<T>): Unsubscribe;
+}
+
+export interface Writable<T> extends Readable<T> {
+  set(this: void, value: T): void;
+
+  update(this: void, updater: (value: T) => T): void;
+}
+
+export type WritableAll<T> = {
+  [K in keyof T]: T[K] extends object[]
+                  ? Writable<T[K]> & WritableAll<T[K]>
+                  : T[K] extends () => void
+                    ? T[K]
+                    : T[K] extends object
+                      ? Writable<T> & WritableAll<T[K]>
+                      : T[K];
+}
+
+export type SimpleState<T> = Writable<T> & T;
+export type RecursiveState<T> = Writable<T> & WritableAll<T>;
+export type State<T> = RecursiveState<T>;
+
+export type Store<T> = {
+  set: Setter<T>;
+  update: (updater: (value: T) => T) => void;
+  subscribe: Subscribe<T>;
+}
 export type Filtered<T> = Pick<T, {
   [K in keyof T]: T[K] extends Restricted ? never : T[K] extends Restricted[] ? never : K;
 }[keyof T]>;
@@ -39,7 +69,7 @@ export type SubscribeFn<T> = (
   fn: Subscriber<T>,
   init?: boolean,
   actions?: Action[],
-  props?: Array<keyof T> | string[]
+  props?: Array<keyof T> | string[],
 ) => Unsubscribe;
 export type Subscribe<T> = SubscribeFn<T> & {
   for: (actions: Action[], handler: SubscriberFn<T>, props?: Array<keyof T> | string[]) => Unsubscribe;
@@ -52,9 +82,12 @@ export type SubscriberFn<T> = (
   value?: T[keyof T],
   action?: Action,
   path?: string,
-  target?: unknown
+  target?: unknown,
 ) => void;
-export type Subscriber<T> = SubscriberFn<T> & { actions?: Action[], props?: Array<keyof T> | string[] };
+export type Subscriber<T> = SubscriberFn<T> & {
+  actions?: Action[],
+  props?: Array<keyof T> | string[]
+};
 export type Unsubscribe = UnsubscribeFn & {
   unsubscribe?: () => void;
 };
