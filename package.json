@@ -81,6 +81,6 @@
   ],
   "type": "module",
   "dependencies": {
-    "@beerush/utils": "^0.2.0"
+    "@beerush/utils": "^0.3.0"
   }
 }
